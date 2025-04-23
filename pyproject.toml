@@ -1,0 +1,26 @@
+[project]
+name = "machine-perception"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "Andrei Kartavik", email = "andreykartavik@gmail.com"},
+]
+dependencies = ["numpy>=2.2.5", "polars>=1.27.1", "torch>=2.7.0", "torchvision>=0.22.0", "torchaudio>=2.7.0", "ultralytics>=8.3.23"]
+requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "MIT"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[tool.pdm]
+distribution = true
+
+[dependency-groups]
+dev = [
+    "jupyter>=1.1.1",
+    "ipykernel>=6.29.5",
+    "matplotlib>=3.10.1",
+]
