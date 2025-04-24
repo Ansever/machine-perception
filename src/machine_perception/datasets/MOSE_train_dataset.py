@@ -362,12 +362,13 @@ class MOSE_Train(VOSTrain):
         self,
         root: str,
         meta_file: str,
+        split: str = "train",
         transform: transforms.Compose | None = None,
         rgb: bool = True,
         rand_gap: int = 3,
         seq_len: int = 3,
         rand_reverse: bool = True,
-        dynamic_merge: bool = True,
+        dynamic_merge: bool = True, # TODO: fix bugs when dynamic_merge is True
         enable_prev_frame: bool = False,
         max_obj_n: int = 10,
         merge_prob: float = 0.3,
@@ -375,8 +376,8 @@ class MOSE_Train(VOSTrain):
         root = os.path.join(
             root,
         )
-        image_root = os.path.join(root, "JPEGImages")
-        label_root = os.path.join(root, "Annotations")
+        image_root = os.path.join(root, split, "JPEGImages")
+        label_root = os.path.join(root, split, "Annotations")
         self.seq_list_file = os.path.join(root, meta_file)
         self._check_preprocess()
         seq_names = list(self.ann_f.keys())
