@@ -175,3 +175,13 @@ cython_debug/
 
 # MAC
 .DS_Store
+
+# Data
+data/train
+data/val
+
+# VSCode
+.vscode/
+
+# Models
+*.pt
