@@ -326,8 +326,9 @@ class STM(nn.Module):
 
 
 def load_stm_state_dict(weights_path: str = "STM_weights.pth") -> dict[str, Any]:
-    state_dict = torch.load(weights_path, weights_only=True)
+    state_dict = torch.load(weights_path, weights_only=True, map_location="cpu")
     new_state_dict = {key.lstrip("module."): val for key, val in state_dict.items()}
+
     return new_state_dict
 
 
