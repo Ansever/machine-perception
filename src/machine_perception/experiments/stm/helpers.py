@@ -14,6 +14,11 @@ def to_cuda(xs: torch.Tensor | list[torch.Tensor] | tuple[torch.Tensor]):
             return [x.cuda() for x in xs]
         else:
             return xs.cuda()
+    elif torch.backends.mps.is_available():
+        if isinstance(xs, list) or isinstance(xs, tuple):
+            return [x.to("mps") for x in xs]
+        else:
+            return xs.to("mps")
     else:
         return xs
 

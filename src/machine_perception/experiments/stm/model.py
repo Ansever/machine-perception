@@ -339,13 +339,17 @@ if __name__ == "__main__":
     # print(stm)
 
     K = 5
-    H, W = 384, 384
-    KEY_DIM, VAL_DIM = 64, 128
+    H, W = 720, 480
+    d = 16
+    H_emb, W_emb = 720 // d, 480 // d
+    T = 3
+    K = 5
+    KEY_DIM, VAL_DIM = 128, 512
 
     example_inputs = [
         torch.rand([1, 3, H, W]),  # frame
-        torch.rand([1, K, KEY_DIM, 3, H, W]),  # keys
-        torch.rand([1, K, VAL_DIM, 3, H, W]),  # values
+        torch.rand([1, K, KEY_DIM, T, H_emb, W_emb]),  # keys: [1, 5, 128, 3, 45, 30]
+        torch.rand([1, K, VAL_DIM, T, H_emb, W_emb]),  # values: [1, 5, 512, 3, 45, 30]
         torch.rand([1, K, H, W]),  # masks
         torch.tensor([3], dtype=int),  # num_objects
     ]
