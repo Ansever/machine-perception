@@ -312,17 +312,17 @@ class STM(nn.Module):
 
         return logit
 
-    def forward(self, frame, keys, values, masks, num_objects):
-        if keys.dim() > 4:  # keys
-            return self.segment(frame, keys, values, num_objects)
-        else:
-            return self.memorize(frame, masks, num_objects)
-
-    # def forward(self, *args, **kwargs):
-    #     if args[1].dim() > 4:  # keys
-    #         return self.segment(*args, **kwargs)
+    # def forward(self, frame, keys, values, masks, num_objects):
+    #     if keys.dim() > 4:  # keys
+    #         return self.segment(frame, keys, values, num_objects)
     #     else:
-    #         return self.memorize(*args, **kwargs)
+    #         return self.memorize(frame, masks, num_objects)
+
+    def forward(self, *args, **kwargs):
+        if args[1].dim() > 4:  # keys
+            return self.segment(*args, **kwargs)
+        else:
+            return self.memorize(*args, **kwargs)
 
 
 def load_stm_state_dict(weights_path: str = "STM_weights.pth") -> dict[str, Any]:
