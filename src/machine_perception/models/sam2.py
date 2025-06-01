@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-from machine_perception.segment_anything_2.sam2.build_sam import (
+from machine_perception.models.facebook.sam2.sam2.build_sam import (
     build_sam2_video_predictor,
 )
 

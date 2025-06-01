@@ -3,24 +3,41 @@ name = "machine-perception"
 version = "0.1.0"
 description = "Default template for PDM package"
 authors = [
-    {name = "Andrei Kartavik", email = "andreykartavik@gmail.com"},
+    { name = "Andrei Kartavik", email = "andreykartavik@gmail.com" },
+    { name = "Nikita Makarevich", email = "nikita_makarevich@yahoo.com" },
 ]
-dependencies = ["numpy>=2.2.5", "polars>=1.27.1", "torch>=2.7.0", "torchvision>=0.22.0", "torchaudio>=2.7.0", "ultralytics>=8.3.23", "supervision>=0.25.1", "setuptools>=80.3.1"]
+dependencies = [
+    "numpy>=2.2.5",
+    "polars>=1.27.1",
+    "ultralytics>=8.3.23",
+    "supervision>=0.25.1",
+    "setuptools>=80.3.1",
+    "jupyter>=1.1.1",
+    "scikit-learn>=1.6.1",
+    "scipy>=1.15.3",
+]
 requires-python = ">=3.11"
 readme = "README.md"
-license = {text = "MIT"}
+license = { text = "MIT" }
 
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
-
 [tool.pdm]
 distribution = true
 
-[dependency-groups]
-dev = [
-    "jupyter>=1.1.1",
-    "ipykernel>=6.29.5",
-    "matplotlib>=3.10.1",
+
+[project.optional-dependencies]
+cpu = ["torch==2.7.0+cpu", "torchvision==0.22.0+cpu"]
+windows-gpu = ["torch==2.7.0+cu118", "torchvision==0.22.0+cu118"]
+
+dev = ["jupyter>=1.1.1", "ipykernel>=6.29.5", "matplotlib>=3.10.1"]
+yolo = [
+    "lap>=0.5.12",
 ]
+
+[[tool.pdm.source]]
+name = "pytorch-cu118"
+url = "https://download.pytorch.org/whl/cu118"
+include_packages = ["torch"]
