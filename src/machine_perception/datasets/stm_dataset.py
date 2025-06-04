@@ -5,7 +5,17 @@ from PIL import Image
 import numpy as np
 
 import torch
+import torch.nn.functional as F
 from torch.utils import data
+
+
+def resize_frames_and_masks(
+    frames_t: torch.Tensor, masks_t: torch.Tensor, new_size: tuple[int, int]
+) -> tuple[torch.Tensor, torch.Tensor]:
+    return (
+        F.interpolate(frames_t, size=new_size, mode="bilinear"),
+        F.interpolate(masks_t, size=new_size, mode="nearest"),
+    )
 
 
 class MoseStmDataset(data.Dataset):
@@ -16,6 +26,8 @@ class MoseStmDataset(data.Dataset):
         root: str,
         imset: str = "meta_train_split.json",
         single_object: bool = False,
+        new_size: tuple[int, int] | None = None,
+        n_frames_to_sample: int = 3,
     ):
         self.root = root
         self.mask_dir = os.path.join(root, "train", "Annotations")
@@ -41,6 +53,8 @@ class MoseStmDataset(data.Dataset):
 
         self.K = 11
         self.single_object = single_object
+        self.new_size = new_size
+        self.n_frames_to_sample = n_frames_to_sample
 
     def __len__(self):
         return len(self.videos)
@@ -66,22 +80,26 @@ class MoseStmDataset(data.Dataset):
             "num_frames": self.num_frames[video],
         }
 
+        final_num_frames = min(self.n_frames_to_sample, self.num_frames[video])
+        frame_idxs = np.random.choice(
+            self.num_frames[video], final_num_frames, replace=False
+        )
+        frame_idxs.sort()
+
         N_frames = np.empty(
-            (self.num_frames[video],) + self.shape[video] + (3,), dtype=np.float32
+            (final_num_frames,) + self.shape[video] + (3,), dtype=np.float32
         )
-        N_masks = np.empty(
-            (self.num_frames[video],) + self.shape[video], dtype=np.uint8
-        )
-        for f in range(self.num_frames[video]):
+        N_masks = np.empty((final_num_frames,) + self.shape[video], dtype=np.uint8)
+        for i, f in enumerate(frame_idxs):
             img_file = os.path.join(self.image_dir, video, "{:05d}.jpg".format(f))
-            N_frames[f] = np.array(Image.open(img_file).convert("RGB")) / 255.0
+            N_frames[i] = np.array(Image.open(img_file).convert("RGB")) / 255.0
             try:
                 mask_file = os.path.join(self.mask_dir, video, "{:05d}.png".format(f))
-                N_masks[f] = np.array(
+                N_masks[i] = np.array(
                     Image.open(mask_file).convert("P"), dtype=np.uint8
                 )
             except Exception:
-                N_masks[f] = 255
+                N_masks[i] = 255
 
         Fs = torch.from_numpy(
             np.transpose(N_frames.copy(), (3, 0, 1, 2)).copy()
@@ -92,20 +110,35 @@ class MoseStmDataset(data.Dataset):
             )
             Ms = torch.from_numpy(self.all_to_onehot(N_masks).copy()).float()
             num_objects = torch.LongTensor([int(1)])
-            return Fs, Ms, num_objects, info
+            # return Fs, Ms, num_objects, info
         else:
             Ms = torch.from_numpy(self.all_to_onehot(N_masks).copy()).float()
             num_objects = torch.LongTensor([int(self.num_objects[video])])
-            return Fs, Ms, num_objects, info
+            # return Fs, Ms, num_objects, info
+
+        # Fs, Ms = Fs[:, :, frame_idxs], Ms[:, :, frame_idxs]
+        Fs, Ms = resize_frames_and_masks(Fs, Ms, new_size=(384, 384))
+        Fs, Ms = Fs.to(Fs.device), Ms.to(Ms.device)
+        return Fs, Ms, num_objects, info
 
 
 if __name__ == "__main__":
     import tqdm
 
-    dataset = MoseStmDataset("data", imset="meta_train_split.json", single_object=False)
+    dataset = MoseStmDataset(
+        "data",
+        imset="meta_train_split.json",
+        single_object=False,
+        new_size=(384, 384),
+        n_frames_to_sample=3,
+    )
 
     for frames, masks, num_objects, info in tqdm.tqdm(dataset):
-        pass
+        print(f"{frames.shape = }")
+        print(f"{masks.shape = }")
+        print(f"{num_objects = }")
+        print(f"{info = }")
+        break
         # print(f"{frames.shape = }")
         # print(f"{masks.shape = }")
         # print(f"{num_objects = }")
