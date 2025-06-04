@@ -117,7 +117,7 @@ class MoseStmDataset(data.Dataset):
             # return Fs, Ms, num_objects, info
 
         # Fs, Ms = Fs[:, :, frame_idxs], Ms[:, :, frame_idxs]
-        Fs, Ms = resize_frames_and_masks(Fs, Ms, new_size=(384, 384))
+        Fs, Ms = resize_frames_and_masks(Fs, Ms, new_size=self.new_size)
         Fs, Ms = Fs.to(Fs.device), Ms.to(Ms.device)
         return Fs, Ms, num_objects, info
 
