@@ -179,6 +179,8 @@ cython_debug/
 # Data
 data/train
 data/val
+data_subset/train
+data_subset/test
 
 # VSCode
 .vscode/
