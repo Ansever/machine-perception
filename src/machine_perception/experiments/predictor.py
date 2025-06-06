@@ -91,25 +91,33 @@ class YoloVideoPredictor(BaseVideoPredictor):
         yolo_to_orig_id: dict[int, int] = {}
         for frame_id, frame in enumerate(frames):
             result = self.yolo.track(np.ascontiguousarray(frame), retina_masks=True)[0]
-            masks = result.masks.data.cpu().numpy().astype(np.uint8)
-            yolo_ids = result.boxes.id.cpu().numpy().astype(np.uint8)
+            if (
+                result.masks is not None
+                and len(result.masks) > 0
+                and result.boxes is not None
+                and len(result.boxes) > 0
+            ):
+                masks = result.masks.data.cpu().numpy().astype(np.uint8)
+                yolo_ids = result.boxes.id.cpu().numpy().astype(np.uint8)
 
-            if len(yolo_to_orig_id) == 0:
-                yolo_to_orig_id = YoloVideoPredictor._match_yolo_to_orig(
-                    {id_: mask for id_, mask in zip(yolo_ids, masks)},
-                    {
-                        id_: (input_mask == id_).astype(np.uint8)
-                        for id_ in np.unique(input_mask)
-                    },
-                )
+                if len(yolo_to_orig_id) == 0:
+                    yolo_to_orig_id = YoloVideoPredictor._match_yolo_to_orig(
+                        {id_: mask for id_, mask in zip(yolo_ids, masks)},
+                        {
+                            id_: (input_mask == id_).astype(np.uint8)
+                            for id_ in np.unique(input_mask)
+                        },
+                    )
 
-            combined_mask = np.zeros_like(input_mask)
+                combined_mask = np.zeros_like(input_mask)
 
-            for i, yolo_id in enumerate(yolo_ids):
-                if yolo_id not in yolo_to_orig_id:
-                    continue
-                orig_id = yolo_to_orig_id[yolo_id]
-                combined_mask[masks[i].astype(bool)] = orig_id
+                for i, yolo_id in enumerate(yolo_ids):
+                    if yolo_id not in yolo_to_orig_id:
+                        continue
+                    orig_id = yolo_to_orig_id[yolo_id]
+                    combined_mask[masks[i].astype(bool)] = orig_id
+            else:
+                combined_mask = np.zeros_like(input_mask)
 
             combined_mask_pil = Image.fromarray(combined_mask, mode="P")
             combined_mask_pil.putpalette(input_mask_pil.palette)
