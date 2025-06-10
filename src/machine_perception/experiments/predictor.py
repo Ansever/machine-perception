@@ -96,6 +96,7 @@ class YoloVideoPredictor(BaseVideoPredictor):
                 and len(result.masks) > 0
                 and result.boxes is not None
                 and len(result.boxes) > 0
+                and result.boxes.id is not None
             ):
                 masks = result.masks.data.cpu().numpy().astype(np.uint8)
                 yolo_ids = result.boxes.id.cpu().numpy().astype(np.uint8)
